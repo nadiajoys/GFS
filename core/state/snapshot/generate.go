@@ -1,18 +1,18 @@
-// Copyright 2019 The go-ethereum Authors
-// This file is part of the go-ethereum library.
+// Copyright 2019 The go-gfscore Authors
+// This file is part of the go-gfscore library.
 //
-// The go-ethereum library is free software: you can redistribute it and/or modify
+// The go-gfscore library is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// The go-ethereum library is distributed in the hope that it will be useful,
+// The go-gfscore library is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 // GNU Lesser General Public License for more details.
 //
 // You should have received a copy of the GNU Lesser General Public License
-// along with the go-ethereum library. If not, see <http://www.gnu.org/licenses/>.
+// along with the go-gfscore library. If not, see <http://www.gnu.org/licenses/>.
 
 package snapshot
 
@@ -23,14 +23,14 @@ import (
 	"time"
 
 	"github.com/VictoriaMetrics/fastcache"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/common/math"
-	"github.com/ethereum/go-ethereum/core/rawdb"
-	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/ethereum/go-ethereum/ethdb"
-	"github.com/ethereum/go-ethereum/log"
-	"github.com/ethereum/go-ethereum/rlp"
-	"github.com/ethereum/go-ethereum/trie"
+	"github.com/gfscore/go-gfscore/common"
+	"github.com/gfscore/go-gfscore/common/math"
+	"github.com/gfscore/go-gfscore/core/rawdb"
+	"github.com/gfscore/go-gfscore/crypto"
+	"github.com/gfscore/go-gfscore/gfsdb"
+	"github.com/gfscore/go-gfscore/log"
+	"github.com/gfscore/go-gfscore/rlp"
+	"github.com/gfscore/go-gfscore/trie"
 )
 
 var (
@@ -91,7 +91,7 @@ func (gs *generatorStats) Log(msg string, marker []byte) {
 // generateSnapshot regenerates a brand new snapshot based on an existing state
 // database and head block asynchronously. The snapshot is returned immediately
 // and generation is continued in the background until done.
-func generateSnapshot(diskdb ethdb.KeyValueStore, triedb *trie.Database, cache int, root common.Hash, wiper chan struct{}) *diskLayer {
+func generateSnapshot(diskdb gfsdb.KeyValueStore, triedb *trie.Database, cache int, root common.Hash, wiper chan struct{}) *diskLayer {
 	// Wipe any previously existing snapshot from the database if no wiper is
 	// currently in progress.
 	if wiper == nil {
@@ -181,7 +181,7 @@ func (dl *diskLayer) generate(stats *generatorStats) {
 		case abort = <-dl.genAbort:
 		default:
 		}
-		if batch.ValueSize() > ethdb.IdealBatchSize || abort != nil {
+		if batch.ValueSize() > gfsdb.IdealBatchSize || abort != nil {
 			// Only write and set the marker if we actually did something useful
 			if batch.ValueSize() > 0 {
 				batch.Write()
@@ -219,7 +219,7 @@ func (dl *diskLayer) generate(stats *generatorStats) {
 				case abort = <-dl.genAbort:
 				default:
 				}
-				if batch.ValueSize() > ethdb.IdealBatchSize || abort != nil {
+				if batch.ValueSize() > gfsdb.IdealBatchSize || abort != nil {
 					// Only write and set the marker if we actually did something useful
 					if batch.ValueSize() > 0 {
 						batch.Write()

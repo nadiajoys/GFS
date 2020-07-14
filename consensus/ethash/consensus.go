@@ -1,18 +1,18 @@
-// Copyright 2017 The go-ethereum Authors
-// This file is part of the go-ethereum library.
+// Copyright 2017 The go-gfscore Authors
+// This file is part of the go-gfscore library.
 //
-// The go-ethereum library is free software: you can redistribute it and/or modify
+// The go-gfscore library is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// The go-ethereum library is distributed in the hope that it will be useful,
+// The go-gfscore library is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 // GNU Lesser General Public License for more details.
 //
 // You should have received a copy of the GNU Lesser General Public License
-// along with the go-ethereum library. If not, see <http://www.gnu.org/licenses/>.
+// along with the go-gfscore library. If not, see <http://www.gnu.org/licenses/>.
 
 package ethash
 
@@ -25,14 +25,14 @@ import (
 	"time"
 
 	mapset "github.com/deckarep/golang-set"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/common/math"
-	"github.com/ethereum/go-ethereum/consensus"
-	"github.com/ethereum/go-ethereum/consensus/misc"
-	"github.com/ethereum/go-ethereum/core/state"
-	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/params"
-	"github.com/ethereum/go-ethereum/rlp"
+	"github.com/gfscore/go-gfscore/common"
+	"github.com/gfscore/go-gfscore/common/math"
+	"github.com/gfscore/go-gfscore/consensus"
+	"github.com/gfscore/go-gfscore/consensus/misc"
+	"github.com/gfscore/go-gfscore/core/state"
+	"github.com/gfscore/go-gfscore/core/types"
+	"github.com/gfscore/go-gfscore/params"
+	"github.com/gfscore/go-gfscore/rlp"
 	"golang.org/x/crypto/sha3"
 )
 
@@ -46,20 +46,20 @@ var (
 
 	// calcDifficultyEip2384 is the difficulty adjustment algorithm as specified by EIP 2384.
 	// It offsets the bomb 4M blocks from Constantinople, so in total 9M blocks.
-	// Specification EIP-2384: https://eips.ethereum.org/EIPS/eip-2384
+	// Specification EIP-2384: https://eips.gfscore.org/EIPS/eip-2384
 	calcDifficultyEip2384 = makeDifficultyCalculator(big.NewInt(9000000))
 
 	// calcDifficultyConstantinople is the difficulty adjustment algorithm for Constantinople.
 	// It returns the difficulty that a new block should have when created at time given the
 	// parent block's time and difficulty. The calculation uses the Byzantium rules, but with
 	// bomb offset 5M.
-	// Specification EIP-1234: https://eips.ethereum.org/EIPS/eip-1234
+	// Specification EIP-1234: https://eips.gfscore.org/EIPS/eip-1234
 	calcDifficultyConstantinople = makeDifficultyCalculator(big.NewInt(5000000))
 
 	// calcDifficultyByzantium is the difficulty adjustment algorithm. It returns
 	// the difficulty that a new block should have when created at time given the
 	// parent block's time and difficulty. The calculation uses the Byzantium rules.
-	// Specification EIP-649: https://eips.ethereum.org/EIPS/eip-649
+	// Specification EIP-649: https://eips.gfscore.org/EIPS/eip-649
 	calcDifficultyByzantium = makeDifficultyCalculator(big.NewInt(3000000))
 )
 
@@ -347,7 +347,7 @@ func makeDifficultyCalculator(bombDelay *big.Int) func(time uint64, parent *type
 	// the block number. Thus we remove one from the delay given
 	bombDelayFromParent := new(big.Int).Sub(bombDelay, big1)
 	return func(time uint64, parent *types.Header) *big.Int {
-		// https://github.com/ethereum/EIPs/issues/100.
+		// https://github.com/gfscore/EIPs/issues/100.
 		// algorithm:
 		// diff = (parent_diff +
 		//         (parent_diff / 2048 * max((2 if len(parent.uncles) else 1) - ((timestamp - parent.timestamp) // 9), -99))
@@ -382,7 +382,7 @@ func makeDifficultyCalculator(bombDelay *big.Int) func(time uint64, parent *type
 			x.Set(params.MinimumDifficulty)
 		}
 		// calculate a fake block number for the ice-age delay
-		// Specification: https://eips.ethereum.org/EIPS/eip-1234
+		// Specification: https://eips.gfscore.org/EIPS/eip-1234
 		fakeBlockNumber := new(big.Int)
 		if parent.Number.Cmp(bombDelayFromParent) >= 0 {
 			fakeBlockNumber = fakeBlockNumber.Sub(parent.Number, bombDelayFromParent)
@@ -406,7 +406,7 @@ func makeDifficultyCalculator(bombDelay *big.Int) func(time uint64, parent *type
 // the difficulty that a new block should have when created at time given the
 // parent block's time and difficulty. The calculation uses the Homestead rules.
 func calcDifficultyHomestead(time uint64, parent *types.Header) *big.Int {
-	// https://github.com/ethereum/EIPs/blob/master/EIPS/eip-2.md
+	// https://github.com/gfscore/EIPs/blob/master/EIPS/eip-2.md
 	// algorithm:
 	// diff = (parent_diff +
 	//         (parent_diff / 2048 * max(1 - (block_timestamp - parent_timestamp) // 10, -99))

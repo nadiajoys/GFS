@@ -1,22 +1,22 @@
-// Copyright 2016 The go-ethereum Authors
-// This file is part of the go-ethereum library.
+// Copyright 2016 The go-gfscore Authors
+// This file is part of the go-gfscore library.
 //
-// The go-ethereum library is free software: you can redistribute it and/or modify
+// The go-gfscore library is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// The go-ethereum library is distributed in the hope that it will be useful,
+// The go-gfscore library is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 // GNU Lesser General Public License for more details.
 //
 // You should have received a copy of the GNU Lesser General Public License
-// along with the go-ethereum library. If not, see <http://www.gnu.org/licenses/>.
+// along with the go-gfscore library. If not, see <http://www.gnu.org/licenses/>.
 
 package bind
 
-import "github.com/ethereum/go-ethereum/accounts/abi"
+import "github.com/gfscore/go-gfscore/accounts/abi"
 
 // tmplData is the data structure required to fill the binding template.
 type tmplData struct {
@@ -90,19 +90,19 @@ import (
 	"math/big"
 	"strings"
 
-	ethereum "github.com/ethereum/go-ethereum"
-	"github.com/ethereum/go-ethereum/accounts/abi"
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/event"
+	gfscore "github.com/gfscore/go-gfscore"
+	"github.com/gfscore/go-gfscore/accounts/abi"
+	"github.com/gfscore/go-gfscore/accounts/abi/bind"
+	"github.com/gfscore/go-gfscore/common"
+	"github.com/gfscore/go-gfscore/core/types"
+	"github.com/gfscore/go-gfscore/event"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
 var (
 	_ = big.NewInt
 	_ = strings.NewReader
-	_ = ethereum.NotFound
+	_ = gfscore.NotFound
 	_ = bind.Bind
 	_ = common.Big1
 	_ = types.BloomLookup
@@ -407,7 +407,7 @@ var (
 			event    string              // Event name to use for unpacking event data
 
 			logs chan types.Log        // Log channel receiving the found contract events
-			sub  ethereum.Subscription // Subscription for errors, completion and termination
+			sub  gfscore.Subscription // Subscription for errors, completion and termination
 			done bool                  // Whether the subscription completed delivering logs
 			fail error                 // Occurred error to stop iteration
 		}
@@ -551,7 +551,7 @@ const tmplSourceJava = `
 
 package {{.Package}};
 
-import org.ethereum.ggfs.*;
+import org.gfscore.ggfs.*;
 import java.util.*;
 
 {{$structs := .Structs}}

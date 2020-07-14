@@ -1,18 +1,18 @@
-// Copyright 2019 The go-ethereum Authors
-// This file is part of the go-ethereum library.
+// Copyright 2019 The go-gfscore Authors
+// This file is part of the go-gfscore library.
 //
-// The go-ethereum library is free software: you can redistribute it and/or modify
+// The go-gfscore library is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// The go-ethereum library is distributed in the hope that it will be useful,
+// The go-gfscore library is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 // GNU Lesser General Public License for more details.
 //
 // You should have received a copy of the GNU Lesser General Public License
-// along with the go-ethereum library. If not, see <http://www.gnu.org/licenses/>.
+// along with the go-gfscore library. If not, see <http://www.gnu.org/licenses/>.
 
 package rawdb
 
@@ -21,18 +21,18 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/common/prque"
-	"github.com/ethereum/go-ethereum/ethdb"
-	"github.com/ethereum/go-ethereum/log"
-	"github.com/ethereum/go-ethereum/rlp"
+	"github.com/gfscore/go-gfscore/common"
+	"github.com/gfscore/go-gfscore/common/prque"
+	"github.com/gfscore/go-gfscore/gfsdb"
+	"github.com/gfscore/go-gfscore/log"
+	"github.com/gfscore/go-gfscore/rlp"
 	"golang.org/x/crypto/sha3"
 )
 
 // InitDatabaseFromFreezer reinitializes an empty database from a previous batch
 // of frozen ancient blocks. The method iterates over all the frozen blocks and
 // injects into the database the block hash->number mappings.
-func InitDatabaseFromFreezer(db ethdb.Database) {
+func InitDatabaseFromFreezer(db gfsdb.Database) {
 	// If we can't access the freezer or it's empty, abort
 	frozen, err := db.Ancients()
 	if err != nil || frozen == 0 {
@@ -56,7 +56,7 @@ func InitDatabaseFromFreezer(db ethdb.Database) {
 		}
 		WriteHeaderNumber(batch, hash, i)
 		// If enough data was accumulated in memory or we're at the last block, dump to disk
-		if batch.ValueSize() > ethdb.IdealBatchSize {
+		if batch.ValueSize() > gfsdb.IdealBatchSize {
 			if err := batch.Write(); err != nil {
 				log.Crit("Failed to write data to db", "err", err)
 			}
@@ -85,7 +85,7 @@ type blockTxHashes struct {
 
 // iterateTransactions iterates over all transactions in the (canon) block
 // number(s) given, and yields the hashes on a channel
-func iterateTransactions(db ethdb.Database, from uint64, to uint64, reverse bool) (chan *blockTxHashes, chan struct{}) {
+func iterateTransactions(db gfsdb.Database, from uint64, to uint64, reverse bool) (chan *blockTxHashes, chan struct{}) {
 	// One thread sequentially reads data from db
 	type numberRlp struct {
 		number uint64
@@ -185,7 +185,7 @@ func iterateTransactions(db ethdb.Database, from uint64, to uint64, reverse bool
 // This function iterates canonical chain in reverse order, it has one main advantage:
 // We can write tx index tail flag periodically even without the whole indexing
 // procedure is finished. So that we can resume indexing procedure next time quickly.
-func IndexTransactions(db ethdb.Database, from uint64, to uint64) {
+func IndexTransactions(db gfsdb.Database, from uint64, to uint64) {
 	// short circuit for invalid range
 	if from >= to {
 		return
@@ -222,7 +222,7 @@ func IndexTransactions(db ethdb.Database, from uint64, to uint64) {
 			blocks++
 			txs += len(delivery.hashes)
 			// If enough data was accumulated in memory or we're at the last block, dump to disk
-			if batch.ValueSize() > ethdb.IdealBatchSize {
+			if batch.ValueSize() > gfsdb.IdealBatchSize {
 				// Also write the tail there
 				WriteTxIndexTail(batch, lastNum)
 				if err := batch.Write(); err != nil {
@@ -250,7 +250,7 @@ func IndexTransactions(db ethdb.Database, from uint64, to uint64) {
 }
 
 // UnindexTransactions removes txlookup indices of the specified block range.
-func UnindexTransactions(db ethdb.Database, from uint64, to uint64) {
+func UnindexTransactions(db gfsdb.Database, from uint64, to uint64) {
 	// short circuit for invalid range
 	if from >= to {
 		return

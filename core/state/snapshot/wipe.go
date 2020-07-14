@@ -1,18 +1,18 @@
-// Copyright 2019 The go-ethereum Authors
-// This file is part of the go-ethereum library.
+// Copyright 2019 The go-gfscore Authors
+// This file is part of the go-gfscore library.
 //
-// The go-ethereum library is free software: you can redistribute it and/or modify
+// The go-gfscore library is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// The go-ethereum library is distributed in the hope that it will be useful,
+// The go-gfscore library is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 // GNU Lesser General Public License for more details.
 //
 // You should have received a copy of the GNU Lesser General Public License
-// along with the go-ethereum library. If not, see <http://www.gnu.org/licenses/>.
+// along with the go-gfscore library. If not, see <http://www.gnu.org/licenses/>.
 
 package snapshot
 
@@ -20,17 +20,17 @@ import (
 	"bytes"
 	"time"
 
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/core/rawdb"
-	"github.com/ethereum/go-ethereum/ethdb"
-	"github.com/ethereum/go-ethereum/log"
+	"github.com/gfscore/go-gfscore/common"
+	"github.com/gfscore/go-gfscore/core/rawdb"
+	"github.com/gfscore/go-gfscore/gfsdb"
+	"github.com/gfscore/go-gfscore/log"
 )
 
 // wipeSnapshot starts a goroutine to iterate over the entire key-value database
 // and delete all the  data associated with the snapshot (accounts, storage,
 // metadata). After all is done, the snapshot range of the database is compacted
 // to free up unused data blocks.
-func wipeSnapshot(db ethdb.KeyValueStore, full bool) chan struct{} {
+func wipeSnapshot(db gfsdb.KeyValueStore, full bool) chan struct{} {
 	// Wipe the snapshot root marker synchronously
 	if full {
 		rawdb.DeleteSnapshotRoot(db)
@@ -52,7 +52,7 @@ func wipeSnapshot(db ethdb.KeyValueStore, full bool) chan struct{} {
 // as the wiper is meant to run on a background thread but the root needs to be
 // removed in sync to avoid data races. After all is done, the snapshot range of
 // the database is compacted to free up unused data blocks.
-func wipeContent(db ethdb.KeyValueStore) error {
+func wipeContent(db gfsdb.KeyValueStore) error {
 	if err := wipeKeyRange(db, "accounts", rawdb.SnapshotAccountPrefix, len(rawdb.SnapshotAccountPrefix)+common.HashLength); err != nil {
 		return err
 	}
@@ -83,7 +83,7 @@ func wipeContent(db ethdb.KeyValueStore) error {
 
 // wipeKeyRange deletes a range of keys from the database starting with prefix
 // and having a specific total key length.
-func wipeKeyRange(db ethdb.KeyValueStore, kind string, prefix []byte, keylen int) error {
+func wipeKeyRange(db gfsdb.KeyValueStore, kind string, prefix []byte, keylen int) error {
 	// Batch deletions together to avoid holding an iterator for too long
 	var (
 		batch = db.NewBatch()

@@ -1,18 +1,18 @@
-// Copyright 2019 The go-ethereum Authors
-// This file is part of the go-ethereum library.
+// Copyright 2019 The go-gfscore Authors
+// This file is part of the go-gfscore library.
 //
-// The go-ethereum library is free software: you can redistribute it and/or modify
+// The go-gfscore library is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// The go-ethereum library is distributed in the hope that it will be useful,
+// The go-gfscore library is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 // GNU Lesser General Public License for more details.
 //
 // You should have received a copy of the GNU Lesser General Public License
-// along with the go-ethereum library. If not, see <http://www.gnu.org/licenses/>.
+// along with the go-gfscore library. If not, see <http://www.gnu.org/licenses/>.
 
 package backends
 
@@ -26,14 +26,14 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ethereum/go-ethereum"
-	"github.com/ethereum/go-ethereum/accounts/abi"
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/core"
-	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/ethereum/go-ethereum/params"
+	"github.com/gfscore/go-gfscore"
+	"github.com/gfscore/go-gfscore/accounts/abi"
+	"github.com/gfscore/go-gfscore/accounts/abi/bind"
+	"github.com/gfscore/go-gfscore/common"
+	"github.com/gfscore/go-gfscore/core"
+	"github.com/gfscore/go-gfscore/core/types"
+	"github.com/gfscore/go-gfscore/crypto"
+	"github.com/gfscore/go-gfscore/params"
 )
 
 func TestSimulatedBackend(t *testing.T) {
@@ -53,8 +53,8 @@ func TestSimulatedBackend(t *testing.T) {
 	if isPending {
 		t.Fatal("transaction should not be pending")
 	}
-	if err != ethereum.NotFound {
-		t.Fatalf("err should be `ethereum.NotFound` but received %v", err)
+	if err != gfscore.NotFound {
+		t.Fatalf("err should be `gfscore.NotFound` but received %v", err)
 	}
 
 	// generate a transaction and confirm you can retrieve it
@@ -385,12 +385,12 @@ func TestSimulatedBackend_EstimateGas(t *testing.T) {
 
 	var cases = []struct {
 		name        string
-		message     ethereum.CallMsg
+		message     gfscore.CallMsg
 		expect      uint64
 		expectError error
 		expectData  interface{}
 	}{
-		{"plain transfer(valid)", ethereum.CallMsg{
+		{"plain transfer(valid)", gfscore.CallMsg{
 			From:     addr,
 			To:       &addr,
 			Gas:      0,
@@ -399,7 +399,7 @@ func TestSimulatedBackend_EstimateGas(t *testing.T) {
 			Data:     nil,
 		}, params.TxGas, nil, nil},
 
-		{"plain transfer(invalid)", ethereum.CallMsg{
+		{"plain transfer(invalid)", gfscore.CallMsg{
 			From:     addr,
 			To:       &contractAddr,
 			Gas:      0,
@@ -408,7 +408,7 @@ func TestSimulatedBackend_EstimateGas(t *testing.T) {
 			Data:     nil,
 		}, 0, errors.New("execution reverted"), nil},
 
-		{"Revert", ethereum.CallMsg{
+		{"Revert", gfscore.CallMsg{
 			From:     addr,
 			To:       &contractAddr,
 			Gas:      0,
@@ -417,7 +417,7 @@ func TestSimulatedBackend_EstimateGas(t *testing.T) {
 			Data:     common.Hex2Bytes("d8b98391"),
 		}, 0, errors.New("execution reverted: revert reason"), "0x08c379a00000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000d72657665727420726561736f6e00000000000000000000000000000000000000"},
 
-		{"PureRevert", ethereum.CallMsg{
+		{"PureRevert", gfscore.CallMsg{
 			From:     addr,
 			To:       &contractAddr,
 			Gas:      0,
@@ -426,7 +426,7 @@ func TestSimulatedBackend_EstimateGas(t *testing.T) {
 			Data:     common.Hex2Bytes("aa8b1d30"),
 		}, 0, errors.New("execution reverted"), nil},
 
-		{"OOG", ethereum.CallMsg{
+		{"OOG", gfscore.CallMsg{
 			From:     addr,
 			To:       &contractAddr,
 			Gas:      100000,
@@ -435,7 +435,7 @@ func TestSimulatedBackend_EstimateGas(t *testing.T) {
 			Data:     common.Hex2Bytes("50f6fe34"),
 		}, 0, errors.New("gas required exceeds allowance (100000)"), nil},
 
-		{"Assert", ethereum.CallMsg{
+		{"Assert", gfscore.CallMsg{
 			From:     addr,
 			To:       &contractAddr,
 			Gas:      100000,
@@ -444,7 +444,7 @@ func TestSimulatedBackend_EstimateGas(t *testing.T) {
 			Data:     common.Hex2Bytes("b9b046f9"),
 		}, 0, errors.New("invalid opcode: opcode 0xfe not defined"), nil},
 
-		{"Valid", ethereum.CallMsg{
+		{"Valid", gfscore.CallMsg{
 			From:     addr,
 			To:       &contractAddr,
 			Gas:      100000,
@@ -487,11 +487,11 @@ func TestSimulatedBackend_EstimateGasWithPrice(t *testing.T) {
 	receipant := common.HexToAddress("deadbeef")
 	var cases = []struct {
 		name        string
-		message     ethereum.CallMsg
+		message     gfscore.CallMsg
 		expect      uint64
 		expectError error
 	}{
-		{"EstimateWithoutPrice", ethereum.CallMsg{
+		{"EstimateWithoutPrice", gfscore.CallMsg{
 			From:     addr,
 			To:       &receipant,
 			Gas:      0,
@@ -500,7 +500,7 @@ func TestSimulatedBackend_EstimateGasWithPrice(t *testing.T) {
 			Data:     nil,
 		}, 21000, nil},
 
-		{"EstimateWithPrice", ethereum.CallMsg{
+		{"EstimateWithPrice", gfscore.CallMsg{
 			From:     addr,
 			To:       &receipant,
 			Gas:      0,
@@ -509,7 +509,7 @@ func TestSimulatedBackend_EstimateGasWithPrice(t *testing.T) {
 			Data:     nil,
 		}, 21000, nil},
 
-		{"EstimateWithVeryHighPrice", ethereum.CallMsg{
+		{"EstimateWithVeryHighPrice", gfscore.CallMsg{
 			From:     addr,
 			To:       &receipant,
 			Gas:      0,
@@ -518,7 +518,7 @@ func TestSimulatedBackend_EstimateGasWithPrice(t *testing.T) {
 			Data:     nil,
 		}, 21000, nil},
 
-		{"EstimateWithSuperhighPrice", ethereum.CallMsg{
+		{"EstimateWithSuperhighPrice", gfscore.CallMsg{
 			From:     addr,
 			To:       &receipant,
 			Gas:      0,
@@ -931,7 +931,7 @@ func TestSimulatedBackend_PendingAndCallContract(t *testing.T) {
 	}
 
 	// make sure you can call the contract in pending state
-	res, err := sim.PendingCallContract(bgCtx, ethereum.CallMsg{
+	res, err := sim.PendingCallContract(bgCtx, gfscore.CallMsg{
 		From: testAddr,
 		To:   &addr,
 		Data: input,
@@ -951,7 +951,7 @@ func TestSimulatedBackend_PendingAndCallContract(t *testing.T) {
 	sim.Commit()
 
 	// make sure you can call the contract
-	res, err = sim.CallContract(bgCtx, ethereum.CallMsg{
+	res, err = sim.CallContract(bgCtx, gfscore.CallMsg{
 		From: testAddr,
 		To:   &addr,
 		Data: input,
@@ -1019,14 +1019,14 @@ func TestSimulatedBackend_CallContractRevert(t *testing.T) {
 
 	call := make([]func([]byte) ([]byte, error), 2)
 	call[0] = func(input []byte) ([]byte, error) {
-		return sim.PendingCallContract(bgCtx, ethereum.CallMsg{
+		return sim.PendingCallContract(bgCtx, gfscore.CallMsg{
 			From: testAddr,
 			To:   &addr,
 			Data: input,
 		})
 	}
 	call[1] = func(input []byte) ([]byte, error) {
-		return sim.CallContract(bgCtx, ethereum.CallMsg{
+		return sim.CallContract(bgCtx, gfscore.CallMsg{
 			From: testAddr,
 			To:   &addr,
 			Data: input,

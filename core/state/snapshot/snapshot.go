@@ -1,18 +1,18 @@
-// Copyright 2019 The go-ethereum Authors
-// This file is part of the go-ethereum library.
+// Copyright 2019 The go-gfscore Authors
+// This file is part of the go-gfscore library.
 //
-// The go-ethereum library is free software: you can redistribute it and/or modify
+// The go-gfscore library is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// The go-ethereum library is distributed in the hope that it will be useful,
+// The go-gfscore library is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 // GNU Lesser General Public License for more details.
 //
 // You should have received a copy of the GNU Lesser General Public License
-// along with the go-ethereum library. If not, see <http://www.gnu.org/licenses/>.
+// along with the go-gfscore library. If not, see <http://www.gnu.org/licenses/>.
 
 // Package snapshot implements a journalled, dynamic state dump.
 package snapshot
@@ -24,12 +24,12 @@ import (
 	"sync"
 	"sync/atomic"
 
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/core/rawdb"
-	"github.com/ethereum/go-ethereum/ethdb"
-	"github.com/ethereum/go-ethereum/log"
-	"github.com/ethereum/go-ethereum/metrics"
-	"github.com/ethereum/go-ethereum/trie"
+	"github.com/gfscore/go-gfscore/common"
+	"github.com/gfscore/go-gfscore/core/rawdb"
+	"github.com/gfscore/go-gfscore/gfsdb"
+	"github.com/gfscore/go-gfscore/log"
+	"github.com/gfscore/go-gfscore/metrics"
+	"github.com/gfscore/go-gfscore/trie"
 )
 
 var (
@@ -153,7 +153,7 @@ type snapshot interface {
 // storage data to avoid expensive multi-level trie lookups; and to allow sorted,
 // cheap iteration of the account/storage tries for sync aid.
 type Tree struct {
-	diskdb ethdb.KeyValueStore      // Persistent database to store the snapshot
+	diskdb gfsdb.KeyValueStore      // Persistent database to store the snapshot
 	triedb *trie.Database           // In-memory cache to access the trie through
 	cache  int                      // Megabytes permitted to use for read caches
 	layers map[common.Hash]snapshot // Collection of all known layers
@@ -167,7 +167,7 @@ type Tree struct {
 // If the snapshot is missing or inconsistent, the entirety is deleted and will
 // be reconstructed from scratch based on the tries in the key-value store, on a
 // background thread.
-func New(diskdb ethdb.KeyValueStore, triedb *trie.Database, cache int, root common.Hash, async bool) *Tree {
+func New(diskdb gfsdb.KeyValueStore, triedb *trie.Database, cache int, root common.Hash, async bool) *Tree {
 	// Create a new, empty snapshot tree
 	snap := &Tree{
 		diskdb: diskdb,
@@ -460,7 +460,7 @@ func diffToDisk(bottom *diffLayer) *diskLayer {
 		base.cache.Set(hash[:], data)
 		snapshotCleanAccountWriteMeter.Mark(int64(len(data)))
 
-		if batch.ValueSize() > ethdb.IdealBatchSize {
+		if batch.ValueSize() > gfsdb.IdealBatchSize {
 			if err := batch.Write(); err != nil {
 				log.Crit("Failed to write account snapshot", "err", err)
 			}
@@ -494,7 +494,7 @@ func diffToDisk(bottom *diffLayer) *diskLayer {
 			snapshotFlushStorageItemMeter.Mark(1)
 			snapshotFlushStorageSizeMeter.Mark(int64(len(data)))
 		}
-		if batch.ValueSize() > ethdb.IdealBatchSize {
+		if batch.ValueSize() > gfsdb.IdealBatchSize {
 			if err := batch.Write(); err != nil {
 				log.Crit("Failed to write storage snapshot", "err", err)
 			}
